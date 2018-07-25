@@ -93,13 +93,10 @@ def segment():
                     output_flat = output.view(-1, ntokens)
                     for i in range(len(output_flat)-1):
                         # use tensor.data.cpu().numpy()[0] to get the element out of the tensor
-                        print(data[i+1].data.cpu().numpy()[0])
-                        print(output_flat)
-                        print(output_flat(data[i+1].data.cpu().numpy()[0]))
                         if output_flat[i][data[i+1].data.cpu().numpy()[0]] < output_flat[i][dictionary.word2idx[BREAK]]:
-                            result_list.apend(dictionary.word2idx[BREAK])
+                            result_list.append(dictionary.word2idx[BREAK])
                         result_list.append(data[i+1])
-                return_line = to_word(result_list)
+                return_line = to_word(result_list, dictionary)
             print("original line")
             print(line)
             print("processed")
