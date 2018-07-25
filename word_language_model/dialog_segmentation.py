@@ -106,6 +106,14 @@ def segment():
 segment()
 
 
+"""TODO:
+1. lowercase in prepare_data
+2. add <unk> (top 50,000 words for ex.)
+3. (pre)-train on Berkely Restaurant dataset
+4. write a save_file function
+5. run on alexa user utterance
+
+"""
 
 
 
