@@ -62,7 +62,7 @@ def prepare_data(dictionary, line):
     ids = torch.LongTensor(len(words))
     token = 0
     for word in words:
-        if words in dictionary.word2idx:
+        if word in dictionary.word2idx:
             ids[token] = dictionary.word2idx[word]
         else:
             ids[token] = dictionary.word2idx["<unk>"]
