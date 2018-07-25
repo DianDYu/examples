@@ -11,13 +11,13 @@ import data
 import model
 
 parser = argparse.ArgumentParser(description='PyTorch dialog segmentation Language Model')
-parser.add_argument('--data', type=str, default='./data/movie_dialogs',
-                    help='location of the data corpus')
+parser.add_argument('--data', type=str, default='./data/movie_dialogs/s_test.txt',
+                    help='location of the data')
 parser.add_argument('--seed', type=int, default=1111,
                     help='random seed')
 parser.add_argument('--cuda', action='store_true',
                     help='use CUDA')
-parser.add_argument('--model', type=str, default='model.pt',
+parser.add_argument('--model', type=str, default='./model.pt',
                     help='load saved model')
 parser.add_argument('--seg_batch_size', type=int, default=1, 
                     help='batch size for segmentation')
@@ -27,9 +27,6 @@ parser.add_argument('--onnx-export', type=str, default='',
                     help='path to export the final model in onnx format')
 args = parser.parse_args()
 
-
-
-ori_file = "test.txt"
 segmented_file = "segmented_dialog.txt"
 BREAK = "<BRK>"
 
@@ -41,8 +38,6 @@ if torch.cuda.is_available():
 
 device = torch.device("cuda" if args.cuda else "cpu")
 
-corpus = data.Corpus(args.data)
-
 """TODO: don't need this function if batch size is 1"""
 def batchify(data, bsz):
     # Work out how cleanly we can divide the dataset into bsz parts.
@@ -53,16 +48,8 @@ def batchify(data, bsz):
     data = data.view(bsz, -1).t().contiguous()
     return data.to(device)
 
-test_data = batchify(corpus.test, args.seg_batch_size)
-
-def get_batch(source, i):
-    seq_len = min(args.bptt, len(source) - 1 - i)
-    data = source[i:i+seq_len]
-    target = source[i+1:i+1+seq_len].view(-1)
-    return data, target
-
 def load_model():
-    with open(args.save, 'rb') as f:
+    with open(args.model, 'rb') as f:
     model = torch.load(f)
     # after load the rnn params are not a continuous chunk of memory
     # this makes them a continuous chunk, and will speed up forward pass
@@ -70,18 +57,10 @@ def load_model():
     print(model)
     return model
 
-def compare(model, line):
-    model.eval()
-    hidden = model.init_hidden(args.seg_batch_size)
-    with torch.no_grad():
-        for i in range(0, data_source.size(0) - 1, args.bptt):
-            data, targets = get_batch(data_source, i)
-            output, hidden = model(data, hidden)
-            output_flat = output.view(-1, ntokens)
-
 def prepare_data(dictionary, line):
     words = line.split() + ['<eos>']
     ids = torch.LongTensor(len(words))
+    token = 0
     for word in words:
         if words in dictionary:
             ids[token] = dictionary.word2idx[word]
@@ -96,9 +75,8 @@ def to_word(idx_list, dictionary):
 
 def segment():
     model = load_model()
-    model.rnn.flatten_parameters()
     # Tokenize file content
-    with open(path, 'r', encoding="utf8") as f:
+    with open(args.data, 'r', encoding="utf8") as f:
         model.eval()
         token = 0
         dictionary = model.dictionary
@@ -122,8 +100,9 @@ def segment():
             print(line)
             print("processed")
             print(return_line)
+            print()
 
-
+segment()
 
 
 
