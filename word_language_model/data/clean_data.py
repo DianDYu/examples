@@ -15,15 +15,28 @@ test_file = "test_file.txt"
 """
 
 break_signal = r"!|\?|\,|\.|\:|\;|\-\-"
-remove_signal = r"""'|\"|\.\.\.|\~|\(|\)|\%|\$|\#|\@|\&|\*|\+|\=|\^|\<|\>"""
+# remove_signal = r"""'|\"|\.\.\.|\~|\(|\)|\%|\$|\#|\@|\&|\*|\+|\=|\^|\<|\>"""
+remove_signal = r"""'|\"|\~|\(|\)|\%|\$|\#|\@|\&|\*|\+|\=|\^|\<|\>"""
 
 def tokenize(line):
+    line = re.sub(remove_signal, "", line)
     doc = nlp(line)
-    return " ".join([token.text for token in doc])
+    annotate = []
+    for token in doc:
+        brk = True
+        for c in token.text:
+            if c.isalnum():
+                brk = False
+        if not brk:
+            annotate.add(token.text)
+        else:
+            if annotate[len(annotate)-1] != BREAK:
+                annotate.add(BREAK)
+    return " ".join([t for t in annotate])
 
 def get_sent(line):
     # find the last occurance of "+++$+++"
-    return line[line.rfind("+++$+++")+8:]
+    return line[line.rfind("+++$+++")+8:].lower()
 
 def annotate(line):
     line = re.sub(remove_signal, "", line)
@@ -51,7 +64,7 @@ def main():
         for line in f:
             line = get_sent(line)
             line = tokenize(line)
-            line = annotate(line)
+            # line = annotate(line)
             if i <= 0.8 * num_lines:
                 training.write(line)
             elif i > 0.8 * num_lines and i <= 0.9 * num_lines:
