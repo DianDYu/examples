@@ -28,10 +28,10 @@ def tokenize(line):
             if c.isalnum():
                 brk = False
         if not brk:
-            annotate.add(token.text)
+            annotate.append(token.text)
         else:
             if annotate[len(annotate)-1] != BREAK:
-                annotate.add(BREAK)
+                annotate.append(BREAK)
     return " ".join([t for t in annotate])
 
 def get_sent(line):
